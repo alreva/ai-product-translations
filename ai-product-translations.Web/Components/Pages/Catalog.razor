@@ -1,0 +1,57 @@
+﻿@page "/catalog"
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+
+@inject CatalogApiClient CatalogApi
+
+<PageTitle>Catalog</PageTitle>
+
+<h1>Catalog</h1>
+
+<p>This component demonstrates showing data loaded from a backend API service.</p>
+
+@if (_products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Color</th>
+                <th>Size(s)</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+        @for (var index = 0; index < _products.Length; index++)
+        {
+            
+            var product = _products[index];
+            var productId = index+1;
+            
+            <tr>
+                <td>
+                    <NavLink class="nav-link" href="@("catalog/products/" + productId)">
+                        @product.ProductName
+                    </NavLink>
+                </td>
+                <td>@product.Color</td>
+                <td>@product.SizeRange</td>
+                <td>@product.Price</td>
+            </tr>
+        }
+    </tbody>
+    </table>
+}
+
+@code {
+    private CatalogProductViewModel[]? _products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _products = await CatalogApi.GetProducts();
+    }
+}

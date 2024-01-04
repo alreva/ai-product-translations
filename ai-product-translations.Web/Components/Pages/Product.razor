@@ -1,0 +1,74 @@
+﻿@page "/catalog/products/{id:int}"
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+
+@inject CatalogApiClient CatalogApi
+@inject ProductDescriptionApiClient DescriptionApi
+
+<PageTitle>Product</PageTitle>
+
+<h1>Product</h1>
+
+<p>This component demonstrates showing data loaded from a backend API service.</p>
+
+@if (_product == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <tbody>
+        <tr>
+            <th>Name</th>
+            <td>@_product.ProductName</td>
+        </tr>
+        <tr>
+            <th>Features</th>
+            <td>@(string.Join(", ", _product.Features))</td>
+        </tr>
+        <tr>
+            <th>Color</th>
+            <td>@_product.Color</td>
+        </tr>
+        <tr>
+            <th>Size(s)</th>
+            <td>@_product.SizeRange</td>
+        </tr>
+        <tr>
+            <th>Price</th>
+            <td>@_product.Price</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>@_description</td>
+        </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    
+    private CatalogProductViewModel? _product;
+    private string? _description;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _product = (await CatalogApi.GetProducts()).Skip(Id-1).Take(1).SingleOrDefault()
+                   ?? new CatalogProductViewModel("", [], "", "", "");
+
+        _description = string.IsNullOrWhiteSpace(_product.Description)
+            ? (await DescriptionApi.GetDescription(BuildDescriptionInput())).Description
+            : _product.Description;
+    }
+
+    private ProductDescriptionInputViewModel BuildDescriptionInput()
+        => new(
+            _product!.ProductName,
+            _product.Features,
+            _product.Color,
+            _product.SizeRange,
+            _product.Price);
+}

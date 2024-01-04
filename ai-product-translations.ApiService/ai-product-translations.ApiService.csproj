@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AiProductTranslations.ApiService</RootNamespace>
+    <UserSecretsId>1aedb127-6dde-4ed8-ba93-b9674a4b547d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ai-product-translations.ServiceDefaults\ai-product-translations.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Catalog\RedisCacheCatalogService.Get.cs">
+      <DependentUpon>RedisCacheCatalogService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Catalog\RedisCacheCatalogService.Sample.cs">
+      <DependentUpon>RedisCacheCatalogService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Catalog\RedisCacheCatalogService.Upload.cs">
+      <DependentUpon>RedisCacheCatalogService.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="8.0.0-preview.2.23619.3" />
+    <PackageReference Include="Scrutor" Version="4.2.2" />
+  </ItemGroup>
+
+</Project>

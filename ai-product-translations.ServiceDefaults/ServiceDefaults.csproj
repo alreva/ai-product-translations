@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAspireSharedProject>true</IsAspireSharedProject>
+    <RootNamespace>ai-product-translations.ServiceDefaults</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

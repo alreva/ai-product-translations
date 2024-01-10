@@ -1,4 +1,4 @@
-namespace AiProductTranslations.ApiService.TranslationService;
+namespace AiProductTranslations.ApiService.Ai.Descriptions;
 
 public record Product(
     string ProductName,

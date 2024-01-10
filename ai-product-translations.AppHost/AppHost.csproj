@@ -6,11 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAspireHost>true</IsAspireHost>
+    <RootNamespace>ai-product-translations.AppHost</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ai-product-translations.ApiService\ai-product-translations.ApiService.csproj" />
-    <ProjectReference Include="..\ai-product-translations.Web\ai-product-translations.Web.csproj" />
+    <ProjectReference Include="..\ai-product-translations.ApiService\ApiService.csproj" />
+    <ProjectReference Include="..\ai-product-translations.Web\Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

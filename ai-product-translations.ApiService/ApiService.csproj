@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ai-product-translations.ServiceDefaults\ai-product-translations.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\ai-product-translations.ServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 ﻿@page "/catalog/products/{id:int}"
+@using System.Globalization
 @attribute [StreamRendering(true)]
 @attribute [OutputCache(Duration = 5)]
 
@@ -41,31 +42,68 @@ else
         </tr>
         <tr>
             <th>Description</th>
-            <td>@_description</td>
+            <td>@((MarkupString)Description)</td>
         </tr>
         </tbody>
     </table>
 }
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
+
+    private static CultureInfo EnCulture => CultureInfo.GetCultureInfo("en-US");
     
+    [Parameter] public int Id { get; set; }
+
     private CatalogProductViewModel? _product;
     private string? _description;
+
+    private string Description
+    {
+        get => _description ?? "";
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                _description = value;
+                return;
+            }
+            _description = value
+                .Trim('\n')
+                .Replace("\n", "<br />");
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
         _product = (await CatalogApi.GetProducts()).Skip(Id-1).Take(1).SingleOrDefault()
                    ?? new CatalogProductViewModel("", [], "", "", "");
 
-        _description = string.IsNullOrWhiteSpace(_product.Description)
-            ? (await DescriptionApi.GetDescription(BuildDescriptionInput())).Description
-            : _product.Description;
+        if (!string.IsNullOrWhiteSpace(_product.Description))
+        {
+            if (Equals(CultureInfo.CurrentUICulture, EnCulture))
+            {
+                Description = _product.Description;
+            }
+            else
+            {
+                Description = (await DescriptionApi.Translate(
+                    new ProductTranslationRequestViewModel(
+                        new LanguageViewModel(CultureInfo.CurrentUICulture.EnglishName),
+                        _product.Description))).Content;
+            }
+        }
+        else
+        {
+            Description = string.IsNullOrWhiteSpace(_product.Description) || !Equals(CultureInfo.CurrentUICulture, EnCulture)
+                ? (await DescriptionApi.GetDescription(BuildDescriptionInput())).Description
+                : _product.Description;
+        }
     }
 
     private ProductDescriptionInputViewModel BuildDescriptionInput()
         => new(
+            CultureInfo.CurrentUICulture.EnglishName,
             _product!.ProductName,
             _product.Features,
             _product.Color,

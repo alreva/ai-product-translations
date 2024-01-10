@@ -8,10 +8,10 @@ var cache = builder
     .AddRedis("cache");
 
 var apiService = builder
-    .AddProject<Projects.ai_product_translations_ApiService>("apiservice")
+    .AddProject<Projects.ApiService>("apiservice")
     .WithReference(cache);
 
-builder.AddProject<Projects.ai_product_translations_Web>("webfrontend")
+builder.AddProject<Projects.Web>("webfrontend")
     .WithReference(cache)
     .WithReference(apiService);
 

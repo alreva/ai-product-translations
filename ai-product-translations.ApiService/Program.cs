@@ -1,5 +1,7 @@
+using AiProductTranslations.ApiService.Ai;
+using AiProductTranslations.ApiService.Ai.Descriptions;
+using AiProductTranslations.ApiService.Ai.Translations;
 using AiProductTranslations.ApiService.Catalog;
-using AiProductTranslations.ApiService.TranslationService;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +12,20 @@ builder.AddRedisDistributedCache("cache");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
-builder.Services.AddSingleton<IProductDescriptionService, OpenAiProductDescriptionService>();
-builder.Services.Decorate<IProductDescriptionService, RedisCacheDelegatingProductDescriptionService>();
+builder.Services
+    .AddTransient<IProductDescriptionService, OpenAiProductDescriptionService>()
+    .Decorate<IProductDescriptionService, RedisCachingProductDescriptionService>();
+builder.Services
+    .AddTransient<IProductTranslationService, OpenAiProductTranslationService>()
+    .Decorate<IProductTranslationService, RedisCacheDelegatingProductTranslationService>();
 builder.Services.AddSingleton<ICatalogService, RedisCacheCatalogService>();
+
+var apiKey = builder.Configuration["OpenAI:ApiKey"]!;
+builder.Services.AddHttpClient<OpenAiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+});
 
 var app = builder.Build();
 
@@ -48,8 +61,28 @@ app.MapGet("/product-descriptions/sample", async (IProductDescriptionService svc
 
     return await svc.GenerateProductDescription(product);
 });
-app.MapPost("/product-descriptions/gen",
-    async ([FromBody]Product product, IProductDescriptionService svc) => await svc.GenerateProductDescription(product));
+
+app.MapPost("/product-descriptions/gen/{lang=English}",
+    async (
+            [FromRoute] string lang,
+            [FromBody] Product product,
+            IProductDescriptionService descriptionService,
+            IProductTranslationService translationService)
+        => lang.Contains("English", StringComparison.OrdinalIgnoreCase)
+            ? await descriptionService.GenerateProductDescription(product)
+            : new(
+                await translationService.Translate(
+                    lang,
+                    (await descriptionService.GenerateProductDescription(product)).Description)));
+
+app.MapPost("/product-descriptions/translate/{lang=English}",
+    async (
+            [FromRoute] string lang,
+            [FromBody] TranslationRequest request,
+            IProductTranslationService translationService)
+        =>
+        await translationService.Translate(request)
+    );
 
 app.MapGet("/catalog/sample", async (ICatalogService svc) => await svc.SampleCatalog());
 app.MapGet("/catalog", async (ICatalogService svc) => await svc.Get());
@@ -59,3 +92,17 @@ app.MapPost("/catalog", async (
 app.MapDefaultEndpoints();
 
 app.Run();
+
+internal static class ConfigExtensions
+{
+    public static IHttpClientBuilder ConfigureOpenAiHttpClient<TService>(this WebApplicationBuilder builder)
+        where TService : class
+    {
+        var apiKey = builder.Configuration["OpenAI:ApiKey"]!;
+        return builder.Services.AddHttpClient<TService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.openai.com/v1/completions");
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        });
+    }
+}

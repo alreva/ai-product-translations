@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -22,7 +23,13 @@ public static class Extensions
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
             // Turn on resilience by default
-            http.AddStandardResilienceHandler();
+            http.AddStandardResilienceHandler(optons =>
+            {
+                var attemptTimeout = TimeSpan.FromSeconds(20);
+                optons.AttemptTimeout.Timeout = attemptTimeout;
+                optons.TotalRequestTimeout.Timeout = attemptTimeout*3;
+                optons.CircuitBreaker.SamplingDuration = attemptTimeout*2;
+            });
 
             // Turn on service discovery by default
             http.UseServiceDiscovery();

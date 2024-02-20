@@ -40,7 +40,7 @@ app.UseAntiforgery();
 
 app.UseOutputCache();
 
-var supportedCultures = new[] { "en-US", "es-CL", "uk-UA" };
+var supportedCultures = new[] { "en-US", "es-CL", "uk-UA", "pl-PL", "sv-SE" };
 var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture(supportedCultures[0])
     .AddSupportedCultures(supportedCultures)

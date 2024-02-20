@@ -1,11 +1,7 @@
 namespace AiProductTranslations.ApiService.Ai;
 
-public record OpenAiResponse
-{
-    public Choice[]? Choices { get; set; }
+public record OpenAiResponse(Choice[]? Choices);
 
-    public record Choice
-    {
-        public string? Text { get; set; }
-    }
-}
+public record Choice(Message? Message);
+
+public record Message(string? Content);

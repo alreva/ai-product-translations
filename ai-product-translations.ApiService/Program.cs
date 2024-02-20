@@ -23,7 +23,7 @@ builder.Services.AddSingleton<ICatalogService, RedisCacheCatalogService>();
 var apiKey = builder.Configuration["OpenAI:ApiKey"]!;
 builder.Services.AddHttpClient<OpenAiClient>(client =>
 {
-    client.BaseAddress = new Uri("https://api.openai.com");
+    client.BaseAddress = new Uri("https://api.openai.com/v1/chat/completions");
     client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 });
 
